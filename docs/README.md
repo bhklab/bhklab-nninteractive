@@ -30,10 +30,14 @@ If you haven't installed it yet, [follow these instructions](https://pixi.sh/lat
 1. Clone this repository to your local machine
 2. Navigate to the project directory
 3. Set up the environment using Pixi:
-
 ```bash
 pixi install
 ```
+4. Clone the nnInteractive repository into this repository
+```bash
+git clone https://github.com/MIC-DKFZ/nnInteractive.git
+```
+5. Make changes to nnInteractive repository to make scripts available to use in the current repository structure. So far, only adding an additional 'nnInteractive.' in front of nnInteractive imports in the nnInteractive repository is necessary. 
 
 ## Documentation
 
