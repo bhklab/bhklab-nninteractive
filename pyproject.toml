@@ -29,12 +29,11 @@ keywords = [
     'nnU-Net',
     'nnunet'
 ]
-dependencies = [
-    "nnunetv2>=2.6",
-    "torch>=2.6",
-    "acvl-utils>=0.2.3,<0.3",  # 0.3 may bring breaking changes. Careful!
-    "batchgenerators>=0.25.1"
-]
+
+dependencies = ["monai>=1.5.1,<2",
+                "nnunetv2>=2.6",
+                "acvl-utils>=0.2.3,<0.3",  # 0.3 may bring breaking changes. Careful!
+                "batchgenerators>=0.25.1"]
 
 [project.urls]
 homepage = "https://github.com/MIC-DKFZ/nnInteractive"
@@ -63,10 +62,10 @@ channels = ["conda-forge"]
 platforms = ["linux-64"]
 
 [tool.pixi.dependencies]
-python = ">=3.12"
+python = "==3.12"
 
 [tool.pixi.pypi-dependencies]
-torch = { version = "*", index = "https://download.pytorch.org/whl/cu126"}
+torch = { version = ">=2.6,<2.9.0", index = "https://download.pytorch.org/whl/cu126"}
 torchvision = { version = "*", index = "https://download.pytorch.org/whl/cu126"}
 nnInteractive = { path = ".", editable = true }
 
