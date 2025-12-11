@@ -384,6 +384,8 @@ site/
 
 # Add your project-specific entries here
 # For example:
-# models/
+model/
 # sandbox/
 # etc.
+
+
