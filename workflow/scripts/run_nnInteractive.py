@@ -42,7 +42,7 @@ def initialize_session(model_path: Path,
     print("Using device:", device)
 
     session = nnInteractiveInferenceSession(
-    device=torch.device("cpu"),  # Set inference device
+    device=device,  # Set inference device
     use_torch_compile=False,  # Experimental: Not tested yet
     verbose=False,
     torch_n_threads=os.cpu_count(),  # Use available CPU cores
@@ -285,6 +285,26 @@ def pos_neg_true_visual(image,
     fig.legend(handles = legend_elem, loc = 'lower right', bbox_to_anchor=(0.67, -0.15), ncol=3, frameon=False, fontsize=11)
     fig.savefig(full_savepath, bbox_inches = 'tight')
 
+def list_nonzero_seg_slices(seg: np.ndarray): 
+    '''  
+    From a given 3D segmentation array, list the slices that have nonzero values (mask) in them.
+
+    Parameters
+    ----------
+    seg: np.ndarray
+        A 3D array containing a mask (ground truth, predicted, etc.)
+    
+    Returns
+    ----------
+    nonzero_slices: list 
+        Contains all of the slice numbers where there are nonzero values
+    '''
+    nonzero_slices = []
+    for slice_idx in range(seg.shape[0]): 
+        if np.count_nonzero(seg[slice_idx]) > 0: 
+            nonzero_slices.append(slice_idx)
+    return nonzero_slices
+
 def calc_metrics(pred_mask: np.ndarray, 
                  gt_mask: np.ndarray, 
                  spacing: np.ndarray, 
@@ -295,9 +315,9 @@ def calc_metrics(pred_mask: np.ndarray,
     Parameters
     ----------
     pred_mask: np.ndarray
-        The mask that was predicted by the model. Assumes (x, y, z) order. 
+        The mask that was predicted by the model. 
     gt_mask: np.ndarray
-        The ground truth segmentation array. Assumes (z, x, y) order. 
+        The ground truth segmentation array. 
     spacing: np.ndarray
         The spacing associated with the ground truth mask. 
     filename: str 
@@ -320,11 +340,18 @@ def calc_metrics(pred_mask: np.ndarray,
     #Add columns for the range of segmentation values (both ground truth and predicted)
     first_gts, last_gts = find_first_last_slice(gt_mask)
     try: #If no mask was predicted, this will throw an error
-        first_pred, last_pred = find_first_last_slice(pred_mask.transpose(2, 0, 1)) #Transposing to (z, x, y) order
+        first_pred, last_pred = find_first_last_slice(pred_mask) 
     except ValueError: 
         print(f"Empty predicted segmentation for file: {filename}.")
         first_pred = 0
         last_pred = 0
+
+    # Get the list of all slices that have segmentation in them for each mask 
+    mask_pred_list = list_nonzero_seg_slices(pred_mask)
+    gt_list = list_nonzero_seg_slices(gt_mask) 
+
+    metric_df['GTSliceList'] = [gt_list]
+    metric_df['PredSliceList'] = [mask_pred_list]
 
     gts_range = [first_gts, last_gts] 
     pred_range = [first_pred, last_pred] 
@@ -333,6 +360,11 @@ def calc_metrics(pred_mask: np.ndarray,
     metric_df['PredSliceRange'] = [pred_range]
     metric_df['filename'] = filename # To ensure we can map the results back to the segmentations 
 
+    # Get slice interval IoU 
+    metric_df['SliceIoU'] = len(list(set.intersection(set(gt_list), set(mask_pred_list)))) / len(list(set.union(set(gt_list), set(mask_pred_list))))
+    metric_df['MaskUniqueSlice'] = [list(set(mask_pred_list) - set(gt_list))] # Only slices that are in predicted mask and are not in ground truth mask
+    metric_df['GTUniqueSlice'] = [list(set(gt_list) - set(mask_pred_list))] # Opposite of the line above
+    
     return metric_df
 
 def run_one_sample_inference(input_npz_file: Path, 
