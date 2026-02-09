@@ -877,12 +877,12 @@ def run_nnint_prompt_test(index_path: str,
 
     # Inference, evaluation, and visuals. Parallelized at patient level 
     pred_results = Parallel(n_jobs = n_jobs)(delayed(run_one_patient)(model_path = model_path, 
-                                                                            img_path = row['image_path'], 
-                                                                            gts_path = row['mask_path'], 
-                                                                            disease_loc = disease_loc, 
-                                                                            lesion_loc = row['lesion_location'], 
-                                                                            autozoom = autozoom, 
-                                                                            visualization = visualizations)
+                                                                     img_path = Path("data/procdata") / disease_loc / row['image_path'], 
+                                                                     gts_path = Path("data/procdata") / disease_loc / row['mask_path'], 
+                                                                     disease_loc = disease_loc, 
+                                                                     lesion_loc = row['lesion_location'], 
+                                                                     autozoom = autozoom, 
+                                                                     visualization = visualizations)
                                             for _, row in tqdm(index_df.iterrows(), total = index_df.shape[0]))
     
     # Save all evaluation results 
