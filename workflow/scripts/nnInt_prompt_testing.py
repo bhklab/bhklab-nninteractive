@@ -302,7 +302,7 @@ def set_session_img(image: np.ndarray,
     '''
     # Ensure that the session gets reset in case there is weird behaviour with the same image being set with different recist prompt
     # (this shouldn't happen, this is just a precaution)
-    session.reset_interaction() 
+    session.reset_interactions() 
 
     # Check if input image dimensions are acceptable 
     if image.ndim != 4:
@@ -631,7 +631,8 @@ def run_one_patient(model_path: Path,
 
     # Get all points and prompts needed for inference 
     max_area_slice = find_max_area_slice(gts_array = gts_array) 
-    negative_pts, center_pt, recist_pts, pts_25_75, maj_axis_len = get_prompt_points(gt2D = gts_array[max_area_slice])
+    negative_pts, center_pt, recist_pts, pts_25_75, maj_axis_len = get_prompt_points(gt2D = gts_array[max_area_slice], 
+                                                                                     spacing = spacing)
     BBOX_2D = get_centered_bbox(center_pt = center_pt, 
                                 major_axis_length = maj_axis_len, 
                                 max_area_slice = max_area_slice)
