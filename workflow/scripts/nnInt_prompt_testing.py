@@ -818,7 +818,7 @@ def run_one_patient(model_path: Path,
         if not visual_savepath.exists(): 
             visual_savepath.mkdir(parents = True, exist_ok = True)
 
-        for key, value in visualization_dict.items: 
+        for key, value in visualization_dict.items(): 
             slice_vis_savepath = visual_savepath / Path(str(key) + '_slice_view.png')
             pos_neg_vis_savepath = visual_savepath / Path(str(key) + '_pos_neg_view.png') 
 
