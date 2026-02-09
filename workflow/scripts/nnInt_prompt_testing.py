@@ -844,9 +844,9 @@ def run_one_patient(model_path: Path,
 @click.option('--n_jobs') 
 @click.option('--visualizations', type = bool, default = True) 
 @click.option('--autozoom', type = bool, default = True)
-def run_nnint_prompt_test(index_path: Path,
+def run_nnint_prompt_test(index_path: str,
                           disease_loc: str, 
-                          model_path: Path, 
+                          model_path: str, 
                           n_jobs: int, 
                           visualizations: bool, 
                           autozoom: bool): 
@@ -876,7 +876,7 @@ def run_nnint_prompt_test(index_path: Path,
     index_df = pd.read_csv(index_path) 
 
     # Inference, evaluation, and visuals. Parallelized at patient level 
-    pred_results = Parallel(n_jobs = n_jobs)(delayed(run_nnint_prompt_test)(model_path = model_path, 
+    pred_results = Parallel(n_jobs = n_jobs)(delayed(run_one_patient)(model_path = model_path, 
                                                                             img_path = row['image_path'], 
                                                                             gts_path = row['mask_path'], 
                                                                             disease_loc = disease_loc, 
