@@ -618,7 +618,7 @@ def run_one_patient(model_path: Path,
         The evaluation of performance for all tested prompts. 
     '''
     # Get appropriate save path for the images and visualizations (if applicable)
-    base_savepath = Path("data/results") / disease_loc / "/".join(gts_path.split("/")[:-1]).replace("images", "nnInt_prompt_test")
+    base_savepath = Path("data/results") / disease_loc / "/".join(str(gts_path).split("/")[:-1]).replace("images", "nnInt_prompt_test")
     
     visual_savepath = base_savepath / 'visualization'
 
@@ -631,7 +631,7 @@ def run_one_patient(model_path: Path,
 
     # Get all points and prompts needed for inference 
     max_area_slice = find_max_area_slice(gts_array = gts_array) 
-    negative_pts, center_pt, recist_pts, pts_25_75, maj_axis_len = get_prompt_points(gt2d = gts_array[max_area_slice])
+    negative_pts, center_pt, recist_pts, pts_25_75, maj_axis_len = get_prompt_points(gt2D = gts_array[max_area_slice])
     BBOX_2D = get_centered_bbox(center_pt = center_pt, 
                                 major_axis_length = maj_axis_len, 
                                 max_area_slice = max_area_slice)
@@ -661,7 +661,7 @@ def run_one_patient(model_path: Path,
                                spacing = spacing, 
                                origin = origin, 
                                direction = direction)
-    rere_mask_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_RERECIST.nii.gz")
+    rere_mask_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_RERECIST.nii.gz")
     rere_savepath = base_savepath / rere_mask_name 
     sitk.WriteImage(rerecist_img, rere_savepath)
 
@@ -677,7 +677,7 @@ def run_one_patient(model_path: Path,
                                 spacing = spacing, 
                                 origin = origin, 
                                 direction = direction)
-    rere_bbox_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_RERECIST_BBOX.nii.gz")
+    rere_bbox_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_RERECIST_BBOX.nii.gz")
     rere_bbox_savepath = base_savepath / rere_bbox_name 
     sitk.WriteImage(rere_bbox_img, rere_bbox_savepath)
 
@@ -694,7 +694,7 @@ def run_one_patient(model_path: Path,
                                       spacing = spacing, 
                                       origin = origin, 
                                       direction = direction)
-    rere_bbox_minax_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_RERECIST_BBOX_MINAX.nii.gz")
+    rere_bbox_minax_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_RERECIST_BBOX_MINAX.nii.gz")
     rere_bbox_minax_savepath = base_savepath / rere_bbox_minax_name
     sitk.WriteImage(rere_bbox_minax_img, rere_bbox_minax_savepath)
 
@@ -713,7 +713,7 @@ def run_one_patient(model_path: Path,
                               spacing = spacing, 
                               origin = origin, 
                               direction = direction)
-    bbox_2d_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_BBOX_2D.nii.gz")
+    bbox_2d_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_BBOX_2D.nii.gz")
     bbox_2d_savepath = base_savepath / bbox_2d_name
     sitk.WriteImage(bbox_2d_img, bbox_2d_savepath)
 
@@ -732,7 +732,7 @@ def run_one_patient(model_path: Path,
                               spacing = spacing, 
                               origin = origin, 
                               direction = direction) 
-    pos_pts_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_PTS_25_75.nii.gz")
+    pos_pts_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_PTS_25_75.nii.gz")
     pos_pts_savepath = base_savepath / pos_pts_name
     sitk.WriteImage(pos_pts_img, pos_pts_savepath)
 
@@ -748,7 +748,7 @@ def run_one_patient(model_path: Path,
                                    spacing = spacing, 
                                    origin = origin, 
                                    direction = direction)
-    pos_pts_bbox_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_PTS_25_75_BBOX.nii.gz")
+    pos_pts_bbox_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_PTS_25_75_BBOX.nii.gz")
     pos_pts_bbox_savepath = base_savepath / pos_pts_bbox_name
     sitk.WriteImage(pos_pts_bbox_img, pos_pts_bbox_savepath)
 
@@ -765,7 +765,7 @@ def run_one_patient(model_path: Path,
                                          spacing = spacing, 
                                          origin = origin, 
                                          direction = direction)
-    pos_pts_bbox_minax_name = gts_path.split("/")[-1].replace(".nii.gz", "_pred_PTS_25_75_BBOX_MINAX.nii.gz")
+    pos_pts_bbox_minax_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_PTS_25_75_BBOX_MINAX.nii.gz")
     pos_pts_bbox_minax_savepath = base_savepath / pos_pts_bbox_minax_name
     sitk.WriteImage(pos_pts_bbox_minax_img, pos_pts_bbox_minax_savepath)
 
