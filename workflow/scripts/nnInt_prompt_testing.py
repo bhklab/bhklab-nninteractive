@@ -567,10 +567,11 @@ def pred_to_img(mask_pred: np.ndarray,
                 spacing, 
                 origin, 
                 direction): 
-    mask_pred_img = sitk.GetImageFromArray(mask_pred, dtype = sitk.sitkUInt8)
+    mask_pred_img = sitk.GetImageFromArray(mask_pred)
     mask_pred_img.SetSpacing(spacing) 
     mask_pred_img.SetOrigin(origin) 
     mask_pred_img.SetDirection(direction) 
+    mask_pred_img = sitk.Cast(mask_pred_img, sitk.sitkUInt8)
 
     return mask_pred_img
 
