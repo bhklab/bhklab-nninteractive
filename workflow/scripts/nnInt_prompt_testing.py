@@ -332,6 +332,9 @@ def infer_rerecist(session_img,
     ----------
     mask_pred_zxy: np.ndarray
         The predicted mask transposed back into the NIfTI format (z, x, y)
+    session_img: 
+        An nnInteractive object of the session that has been initialized and has image and target buffer set. Includes the current
+        added prompts
     '''
     # Do inference with RERECIST prompt
     session_img.add_scribble_interaction(rerecist, include_interaction=True)
@@ -340,7 +343,7 @@ def infer_rerecist(session_img,
     # Transpose outputs back to NIfTI coordinate format for saving and metric calculation 
     mask_pred_zxy = results.cpu().numpy().transpose(2, 0, 1)
 
-    return mask_pred_zxy
+    return mask_pred_zxy, session_img
 
 def infer_bbox_2d(session_img, 
                   bbox_2d: list): 
@@ -354,6 +357,14 @@ def infer_bbox_2d(session_img,
         An nnInteractive object of the session that has been initialized and has image and target buffer set. 
     bbox_2d: list
         A bounding box with shape compatible with nnInteractive prompt input. 
+    
+    Returns
+    ----------
+    mask_pred_zxy: np.ndarray
+        The predicted mask transposed back into the NIfTI format (z, x, y)
+    session_img: 
+        An nnInteractive object of the session that has been initialized and has image and target buffer set. Includes the current
+        added prompts
     '''
     # Do inference using the bounding box provided 
     session_img.add_bbox_interaction(bbox_coords = bbox_2d, include_interaction = True)
@@ -362,7 +373,7 @@ def infer_bbox_2d(session_img,
     # Transpose outputs back to NIfTI coordinate format for saving and metric calculation 
     mask_pred_zxy = results.cpu().numpy().transpose(2, 0, 1)
 
-    return mask_pred_zxy
+    return mask_pred_zxy, session_img
 
 def infer_25_75_pts(session_img, 
                     pts_25_75: list): 
@@ -382,6 +393,9 @@ def infer_25_75_pts(session_img,
     ----------
     mask_pred_zxy: np.ndarray
         The predicted mask transposed back into the NIfTI format (z, x, y)
+    session_img: 
+        An nnInteractive object of the session that has been initialized and has image and target buffer set. Includes the current
+        added prompts
     '''
     # Add each of the sampled points as positive interactions for inference 
     session_img.add_point_interaction(pts_25_75[0], include_interaction=True) 
@@ -392,7 +406,7 @@ def infer_25_75_pts(session_img,
     # Transpose outputs back to NIfTI coordinate format for saving and metric calculation 
     mask_pred_zxy = results.cpu().numpy().transpose(2, 0, 1)
 
-    return mask_pred_zxy
+    return mask_pred_zxy, session_img
 
 def infer_bbox_rotated(session_img, 
                        bbox_rotated_pts: list):
@@ -413,6 +427,9 @@ def infer_bbox_rotated(session_img,
     ----------
     mask_pred_zxy: np.ndarray
         The predicted mask transposed back into the NIfTI format (z, x, y)
+    session_img: 
+        An nnInteractive object of the session that has been initialized and has image and target buffer set. Includes the current
+        added prompts
     '''
     # Add each of the four corners as an negative interaction for inference 
     session_img.add_point_interaction(bbox_rotated_pts[0], include_interaction=False)
@@ -425,7 +442,7 @@ def infer_bbox_rotated(session_img,
     # Transpose outputs back to NIfTI coordinate format for saving and metric calculation 
     mask_pred_zxy = results.cpu().numpy().transpose(2, 0, 1)
 
-    return mask_pred_zxy
+    return mask_pred_zxy, session_img
 
 def infer_min_ax_pts(session_img, 
                      min_ax_pts: list): 
@@ -446,6 +463,9 @@ def infer_min_ax_pts(session_img,
     ----------
     mask_pred_zxy: np.ndarray
         The predicted mask transposed back into the NIfTI format (z, x, y)
+    session_img: 
+        An nnInteractive object of the session that has been initialized and has image and target buffer set. Includes the current
+        added prompts
     '''
     # Add the minor axis sampled points as negative interactions
     session_img.add_point_interaction(min_ax_pts[0], include_interaction=False)
@@ -456,7 +476,7 @@ def infer_min_ax_pts(session_img,
     # Transpose outputs back to NIfTI coordinate format for saving and metric calculation 
     mask_pred_zxy = results.cpu().numpy().transpose(2, 0, 1)
 
-    return mask_pred_zxy
+    return mask_pred_zxy, session_img
 
 def slice_visual_nnint(image, 
                         mask_preds, 
@@ -525,35 +545,35 @@ def slice_visual_nnint(image,
     if 'rerecist_scrib' in prompt_list: 
         idx = prompt_list.index('rerecist_scrib')
         rerecist_info = prompts[idx]
-        rerecist_zxy = rerecist_info[0, :, :, :].transpose(2, 0, 1)
+        rerecist_zxy = rerecist_info.transpose(2, 0, 1)
         line_data = list(array_to_coords(rerecist_zxy[slice_idx]))
         x, y = zip(*line_data)
         axes[2].plot(x, y, 'r')
     if 'bbox_rotated' in prompt_list: 
         idx = prompt_list.index('bbox_rotated') 
         bbox_rotated = prompts[idx]
-        axes[2].scatter(bbox_rotated[1], bbox_rotated[0], c = 'c', marker = '.', s = 6)
-        axes[2].scatter(bbox_rotated[3], bbox_rotated[2], c = 'c', marker = '.', s = 6)
-        axes[2].scatter(bbox_rotated[5], bbox_rotated[4], c = 'c', marker = '.', s = 6)
-        axes[2].scatter(bbox_rotated[7], bbox_rotated[6], c = 'c', marker = '.', s = 6)
+        axes[2].scatter(bbox_rotated[0][1], bbox_rotated[0][0], c = 'c', marker = '.', s = 6)
+        axes[2].scatter(bbox_rotated[1][1], bbox_rotated[1][0], c = 'c', marker = '.', s = 6)
+        axes[2].scatter(bbox_rotated[2][1], bbox_rotated[2][0], c = 'c', marker = '.', s = 6)
+        axes[2].scatter(bbox_rotated[3][1], bbox_rotated[3][0], c = 'c', marker = '.', s = 6)
     if 'bbox_2d' in prompt_list: 
-        idx = prompt_list.index['bbox_2d'] 
+        idx = prompt_list.index('bbox_2d') 
         bbox_2d = prompts[idx]
         bbox_pt = (bbox_2d[1][0], bbox_2d[0][0]) # (x1, y1) pair
         w = bbox_2d[1][1] - bbox_2d[1][0] # x2 - x1 for width
         h = bbox_2d[0][1] - bbox_2d[0][0] # y2 - y1 for height
-        bbox = mpatches.Rectangle(bbox_pt, w, h, linewidth = 2, edgecolor='red', facecolor=None, fill = False)
+        bbox = mpatches.Rectangle(bbox_pt, w, h, linewidth = 1, edgecolor='red', facecolor=None, fill = False)
         axes[2].add_patch(bbox)
     if 'min_ax_pts' in prompt_list:
-        idx = prompt_list.index['min_ax_pts']
+        idx = prompt_list.index('min_ax_pts')
         min_ax_pts = prompts[idx]
-        axes[2].scatter(min_ax_pts[1], min_ax_pts[0], c = 'c', marker = '.', s = 6)
-        axes[2].scatter(min_ax_pts[3], min_ax_pts[2], c = 'c', marker = '.', s = 6)
+        axes[2].scatter(min_ax_pts[0][1], min_ax_pts[0][0], c = 'c', marker = '.', s = 6)
+        axes[2].scatter(min_ax_pts[1][1], min_ax_pts[1][0], c = 'c', marker = '.', s = 6)
     if 'pts_25_75' in prompt_list: 
-        idx = prompt_list.index['pts_25_75']
+        idx = prompt_list.index('pts_25_75')
         pts_27_75 = prompts[idx]
-        axes[2].scatter(pts_27_75[1], pts_27_75[0], c = 'y', marker = '.', s = 6)
-        axes[2].scatter(pts_27_75[3], pts_27_75[2], c = 'y', marker = '.', s = 6)
+        axes[2].scatter(pts_27_75[0][1], pts_27_75[0][0], c = 'y', marker = '.', s = 6)
+        axes[2].scatter(pts_27_75[1][1], pts_27_75[1][0], c = 'y', marker = '.', s = 6)
 
     axes[2].set_title("Predicted Masks")
     axes[2].axis("off")
@@ -562,6 +582,8 @@ def slice_visual_nnint(image,
     plt.subplots_adjust(bottom=0)
     
     fig.savefig(full_savepath, bbox_inches = 'tight')
+
+    plt.close()
 
 def pred_to_img(mask_pred: np.ndarray, 
                 spacing, 
@@ -619,7 +641,7 @@ def run_one_patient(model_path: Path,
         The evaluation of performance for all tested prompts. 
     '''
     # Get appropriate save path for the images and visualizations (if applicable)
-    base_savepath = Path("data/results") / disease_loc / "/".join(str(gts_path).split("/")[:-1]).replace("images", "nnInt_prompt_test")
+    base_savepath = Path("data/results") / disease_loc / Path("/".join(str(gts_path).split("/")[:-1]).replace("images", "nnInt_prompt_test"))
     
     visual_savepath = base_savepath / 'visualization'
 
@@ -627,13 +649,13 @@ def run_one_patient(model_path: Path,
         base_savepath.mkdir(parents = True, exist_ok = True)
 
     # Transform data into workable format 
-    img_array, gts_array, spacing, direction, origin = transform_nifti_pair(img_nifti_path = img_path, 
-                                                                            gts_nifti_path = gts_path)
+    img_array, gts_array, spacing, direction, origin = transform_nifti_pair(img_nifti_path = Path("data/procdata") / disease_loc / img_path, 
+                                                                            gts_nifti_path = Path("data/procdata") / disease_loc / gts_path)
 
     # Get all points and prompts needed for inference 
     max_area_slice = find_max_area_slice(gts_array = gts_array) 
     negative_pts, center_pt, recist_pts, pts_25_75, maj_axis_len = get_prompt_points(gt2D = gts_array[max_area_slice], 
-                                                                                     spacing = spacing)
+                                                                                     spacing = img_array.shape)
     BBOX_2D = get_centered_bbox(center_pt = center_pt, 
                                 major_axis_length = maj_axis_len, 
                                 max_area_slice = max_area_slice)
@@ -652,7 +674,7 @@ def run_one_patient(model_path: Path,
     
     # Begin inference testing #
     # RERECIST prompt only
-    rerecist = infer_rerecist(session_img = curr_session_img, 
+    rerecist, rere_session = infer_rerecist(session_img = curr_session_img, 
                                rerecist = RERECIST_SCRIB)
     rere_metrics = calc_metrics(pred_mask = rerecist, 
                                 gt_mask = gts_array, 
@@ -668,7 +690,7 @@ def run_one_patient(model_path: Path,
     sitk.WriteImage(rerecist_img, rere_savepath)
 
     # RERECIST prompt with 4 negative points from rotated bounding box 
-    rere_bbox = infer_bbox_rotated(session_img = curr_session_img, 
+    rere_bbox, rere_bbox_session = infer_bbox_rotated(session_img = rere_session, 
                                    bbox_rotated_pts = BBOX_ROTATED)
     rere_bbox_metrics = calc_metrics(pred_mask = rere_bbox, 
                                      gt_mask = gts_array, 
@@ -685,7 +707,7 @@ def run_one_patient(model_path: Path,
 
     # RERECIST prompt with 4 negative points from rotated bounding box and 2 negative points from 
     # augmented minor axis points 
-    rere_bbox_minax = infer_min_ax_pts(session_img = curr_session_img, 
+    rere_bbox_minax, _ = infer_min_ax_pts(session_img = rere_bbox_session, 
                                        min_ax_pts = MIN_AX_PTS) 
     rere_bbox_minax_metrics = calc_metrics(pred_mask = rere_bbox_minax, 
                                            gt_mask = gts_array, 
@@ -704,7 +726,7 @@ def run_one_patient(model_path: Path,
     curr_session_img.set_target_buffer(torch.zeros(img_array.shape[1:], dtype=torch.uint8))
     curr_session_img.reset_interactions()
 
-    bbox_2d = infer_bbox_2d(session_img = curr_session_img, 
+    bbox_2d, bbox_2d_session = infer_bbox_2d(session_img = curr_session_img, 
                             bbox_2d = BBOX_2D)
     bbox_2d_metrics = calc_metrics(pred_mask = bbox_2d, 
                                    gt_mask = gts_array, 
@@ -719,11 +741,43 @@ def run_one_patient(model_path: Path,
     bbox_2d_savepath = base_savepath / bbox_2d_name
     sitk.WriteImage(bbox_2d_img, bbox_2d_savepath)
 
+    # 2D bounding box (positive) with 4 negative points from rotated bounding box
+    bbox_2d_bbox, bbox_2d_bbox_session = infer_bbox_rotated(session_img = bbox_2d_session, 
+                                         bbox_rotated_pts = BBOX_ROTATED)
+    bbox_2d_bbox_metrics = calc_metrics(pred_mask = bbox_2d_bbox, 
+                                   gt_mask = gts_array, 
+                                   spacing = spacing, 
+                                   filename = str(gts_path))
+    bbox_2d_bbox_metrics['prompt_type'] = 'BBOX_2D_BBOX'
+    bbox_2d_bbox_img = pred_to_img(mask_pred = bbox_2d_bbox, 
+                              spacing = spacing, 
+                              origin = origin, 
+                              direction = direction)
+    bbox_2d_bbox_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_BBOX_2D_BBOX.nii.gz")
+    bbox_2d_bbox_savepath = base_savepath / bbox_2d_bbox_name
+    sitk.WriteImage(bbox_2d_bbox_img, bbox_2d_bbox_savepath)
+
+    # 2D bounding box (positive) with 4 negative points from rotated bounding box and 2 negative points along minor axis orientation
+    bbox_2d_bbox_minax, _ = infer_min_ax_pts(session_img = bbox_2d_bbox_session, 
+                                          min_ax_pts = MIN_AX_PTS)
+    bbox_2d_bbox_minax_metrics = calc_metrics(pred_mask = bbox_2d_bbox_minax, 
+                                   gt_mask = gts_array, 
+                                   spacing = spacing, 
+                                   filename = str(gts_path))
+    bbox_2d_bbox_minax_metrics['prompt_type'] = 'BBOX_2D_BBOX_MINAX'
+    bbox_2d_bbox_minax_img = pred_to_img(mask_pred = bbox_2d_bbox_minax, 
+                              spacing = spacing, 
+                              origin = origin, 
+                              direction = direction)
+    bbox_2d_bbox_minax_name = str(gts_path).split("/")[-1].replace(".nii.gz", "_pred_BBOX_2D_BBOX_MINAX.nii.gz")
+    bbox_2d_bbox_minax_savepath = base_savepath / bbox_2d_bbox_minax_name
+    sitk.WriteImage(bbox_2d_bbox_minax_img, bbox_2d_bbox_minax_savepath)
+
     # Reset interactions and target buffer before inference using two sampled RERECIST points 
     curr_session_img.set_target_buffer(torch.zeros(img_array.shape[1:], dtype=torch.uint8))
     curr_session_img.reset_interactions()
 
-    pos_pts = infer_25_75_pts(session_img = curr_session_img, 
+    pos_pts, pos_session = infer_25_75_pts(session_img = curr_session_img, 
                               pts_25_75 = PTS_25_75)
     pos_pts_metrics = calc_metrics(pred_mask = pos_pts, 
                                    gt_mask = gts_array, 
@@ -739,7 +793,7 @@ def run_one_patient(model_path: Path,
     sitk.WriteImage(pos_pts_img, pos_pts_savepath)
 
     # Sampled RERECIST points with 4 negative points from rotated bounding box
-    pos_pts_bbox = infer_bbox_rotated(session_img = curr_session_img, 
+    pos_pts_bbox, pos_bbox_session = infer_bbox_rotated(session_img = pos_session, 
                                       bbox_rotated_pts = BBOX_ROTATED)
     pos_pts_bbox_metrics = calc_metrics(pred_mask = pos_pts_bbox, 
                                         gt_mask = gts_array, 
@@ -756,7 +810,7 @@ def run_one_patient(model_path: Path,
 
     # Sampled RERECIST points with 4 negative points from rotated bounding box and 2 negative points from 
     # augmented minor axis points 
-    pos_pts_bbox_minax = infer_min_ax_pts(session_img = curr_session_img, 
+    pos_pts_bbox_minax, _ = infer_min_ax_pts(session_img = pos_bbox_session, 
                                           min_ax_pts = MIN_AX_PTS)
     pos_pts_bbox_minax_metrics = calc_metrics(pred_mask = pos_pts_bbox, 
                                               gt_mask = gts_array, 
@@ -796,6 +850,12 @@ def run_one_patient(model_path: Path,
                               'BBOX_2D': {'prediction': bbox_2d, 
                                           'prompt_type': ['bbox_2d'], 
                                           'prompts': [BBOX_2D]}, 
+                              'BBOX_2D_BBOX': {'prediction': bbox_2d_bbox, 
+                                               'prompt_type': ['bbox_2d', 'bbox_rotated'],
+                                               'prompts': [BBOX_2D, BBOX_ROTATED]},
+                              'BBOX_2D_BBOX_MINAX': {'prediction': bbox_2d_bbox_minax, 
+                                                     'prompt_type': ['bbox_2d', 'bbox_rotated', 'min_ax_pts'], 
+                                                     'prompts': [BBOX_2D, BBOX_ROTATED, MIN_AX_PTS]},
                               'POS_PTS': {'prediction': pos_pts, 
                                           'prompt_type': ['pts_25_75'], 
                                           'prompts': [PTS_25_75]}, 
@@ -879,8 +939,8 @@ def run_nnint_prompt_test(index_path: str,
 
     # Inference, evaluation, and visuals. Parallelized at patient level 
     pred_results = Parallel(n_jobs = n_jobs)(delayed(run_one_patient)(model_path = model_path, 
-                                                                     img_path = Path("data/procdata") / disease_loc / row['image_path'], 
-                                                                     gts_path = Path("data/procdata") / disease_loc / row['mask_path'], 
+                                                                     img_path = row['image_path'], 
+                                                                     gts_path = row['mask_path'], 
                                                                      disease_loc = disease_loc, 
                                                                      lesion_loc = row['lesion_location'], 
                                                                      autozoom = autozoom, 
