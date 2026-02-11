@@ -812,7 +812,7 @@ def run_one_patient(model_path: Path,
     # augmented minor axis points 
     pos_pts_bbox_minax, _ = infer_min_ax_pts(session_img = pos_bbox_session, 
                                           min_ax_pts = MIN_AX_PTS)
-    pos_pts_bbox_minax_metrics = calc_metrics(pred_mask = pos_pts_bbox, 
+    pos_pts_bbox_minax_metrics = calc_metrics(pred_mask = pos_pts_bbox_minax, 
                                               gt_mask = gts_array, 
                                               spacing = spacing, 
                                               filename = str(gts_path))
@@ -829,7 +829,9 @@ def run_one_patient(model_path: Path,
     metrics_df = pd.concat([rere_metrics, 
                             rere_bbox_metrics, 
                             rere_bbox_minax_metrics,
-                            bbox_2d_metrics, 
+                            bbox_2d_metrics,
+                            bbox_2d_bbox_metrics, 
+                            bbox_2d_bbox_minax_metrics, 
                             pos_pts_metrics, 
                             pos_pts_bbox_metrics, 
                             pos_pts_bbox_minax_metrics], ignore_index = True)
