@@ -276,6 +276,8 @@ def pos_neg_true_visual(image,
     fig.legend(handles = legend_elem, loc = 'lower right', bbox_to_anchor=(0.67, -0.15), ncol=3, frameon=False, fontsize=11)
     fig.savefig(full_savepath, bbox_inches = 'tight')
 
+    plt.close()
+    
 def plot_hist(gt_mask: np.ndarray, 
               pred_mask: np.ndarray, 
               full_savepath: Path, 
@@ -321,6 +323,8 @@ def plot_hist(gt_mask: np.ndarray,
 
     # Save figure 
     fig.savefig(full_savepath, bbox_inches = 'tight')
+
+    plt.close() 
 
 def plot_density(gt_mask: np.ndarray, 
               pred_mask: np.ndarray,
@@ -375,6 +379,8 @@ def plot_density(gt_mask: np.ndarray,
 
         # Save figure
         plt.savefig(full_savepath, bbox_inches = 'tight')
+
+        plt.close()
     except ValueError:
         print(f"NaNs present during the calculation of density for: {full_savepath}. Cannot create density plot.")
         return 0
@@ -465,6 +471,8 @@ def slice_visual(image,
     
     fig.savefig(full_savepath, bbox_inches = 'tight')
 
+    plt.close()
+    
 def run_inference_base(model_path: Path,
                        img_array: np.ndarray, 
                        recist_coords: np.ndarray, 
