@@ -291,3 +291,72 @@ def slice_visual_nnint(image: np.ndarray,
     plt.close()
 
     return fig
+
+
+def mid_slice_visual(image: np.ndarray, 
+                     mask_preds: np.ndarray, 
+                     gt_masks: np.ndarray,  
+                     mid_slice: int, 
+                     full_savepath: Path, 
+                     window_level: int = 40, 
+                     window_width: int = 400): 
+    '''
+    Adjusted visualization from the inference_example_3D.ipynb example notebook that is in the BiomedParse repo. Saves a figure 
+    showing the middle slice of the original image, the ground truth mask overlayed, and the predicted mask overlayed along 
+    with the text prompt used to create the mask as the legend. 
+
+    Parameters
+    ----------
+    image: 
+        The 4D array containing the original image data (assumes (1, x, y, z) order)
+    mask_preds: 
+        The array containing the predicted mask values (same shape as gt_masks). Assumes (x, y, z) order.
+    gt_masks: 
+        The array containing the ground truth mask values (same shape as mask_preds). Assumes (z, x, y) order.
+    text_prompts: dict 
+        Contains all of the prompts used to create the predicted masks (for now only one text prompt in dict) 
+    mid_slice: int 
+        The middle slice of the segmentation 
+    full_savepath: Path
+        Should contain where to save the path and what to call the file outputted
+    window_level: int 
+        Window level for image visualiation. Set to 40 default. Is the abdominal window when the width is also left as default.
+    window_width: int 
+        The width of the window for image visualization. Set to 400 default. Is the abdominal window when the level is also left as default.
+    '''
+    #Calculate min and max HU for windowing 
+    upper_val = window_level + window_width / 2 
+    lower_val = window_level - window_width / 2 
+
+    #Get middle slice for image and both masks
+    slice_id = mid_slice
+    slice_image = image[0,:,:,slice_id]
+    slice_mask = mask_preds[:,:,slice_id]
+    slice_gt   = gt_masks[slice_id]
+
+    slice_mask = np.ma.masked_where(slice_mask == 0, slice_mask)
+    slice_gt = np.ma.masked_where(slice_gt == 0, slice_gt)
+
+    colours = ['c']
+    cmap = mcolors.ListedColormap(colours)
+
+    fig, axes = plt.subplots(1, 3, figsize=(8, 3))
+
+    axes[0].imshow(np.clip(slice_image, lower_val, upper_val), cmap="gray")
+    axes[0].set_title("Original Image Slice")
+    axes[0].axis("off")
+
+    axes[1].imshow(np.clip(slice_image, lower_val, upper_val), cmap='gray')
+    axes[1].imshow(slice_gt, cmap=cmap, interpolation='nearest', alpha = 0.6)
+    axes[1].set_title("Ground Truth Mask")
+    axes[1].axis("off")
+
+    axes[2].imshow(np.clip(slice_image, lower_val, upper_val), cmap='gray')
+    axes[2].imshow(slice_mask, cmap=cmap, interpolation='nearest', alpha = 0.6)
+    axes[2].set_title("Predicted Mask")
+    axes[2].axis("off")
+
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0)
+    
+    fig.savefig(full_savepath, bbox_inches = 'tight')
