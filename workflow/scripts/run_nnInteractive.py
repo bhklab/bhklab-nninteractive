@@ -12,10 +12,9 @@ import time
 from evaluate import Evaluator
 from pathlib import Path
 from joblib import Parallel, delayed
-from skimage.measure import regionprops, label
 from tqdm import tqdm
 
-from skimage.measure import label
+from utils.masks import find_centre_slice, find_first_last_slice
 
 from nnInteractive.nnInteractive.inference.inference_session import nnInteractiveInferenceSession
 
@@ -91,55 +90,6 @@ def run_recist_infer(image,
 
     return results
 
-def locate_centre_slice(mask_3d):
-    """
-    Locates the center slice of a 3D mask.
-
-    Args:
-    - mask_3d (ndarray): A 3D binary mask.
-
-    Returns:
-    - (int): The index of the center slice.
-    """
-    
-    # find the slice in the center
-    lesion_labels = label(mask_3d)
-    centre_slc = regionprops(lesion_labels)[0].centroid[0]
-
-    # number of voxels per slice
-    vox_per_slc = np.array([np.sum(mask_3d[slc,:,:]) for slc in range(mask_3d.shape[0])])
-    max_vox_slc = np.where(vox_per_slc==np.max(vox_per_slc))[0]
-    if len(max_vox_slc) > 1: 
-        max_vox_slc = max_vox_slc[int(np.floor(len(max_vox_slc)/2))]
-
-    return int(np.floor((centre_slc+max_vox_slc)/2))
-
-def find_first_last_slice(mask): 
-    '''
-    Based on a 3D mask array, get the first and last slice within the array that has masked values. 
-
-    Parameters
-    ----------
-    mask: 
-        3D mask array 
-    
-    Returns 
-    ----------
-    first_slice: int 
-        The index where the first slice of the mask is 
-    last_slice: int 
-        The index where the last slice of the mask is 
-    '''
-    axes = tuple([i for i in range(mask.ndim) if i != 0])
-
-    slices = mask.any(axis = axes) 
-
-    nonzero_indices = np.where(slices)[0]
-
-    first_slice = np.amin(nonzero_indices)
-    last_slice = np.amax(nonzero_indices)
-
-    return first_slice, last_slice
 
 def mid_slice_visual(image, 
                      mask_preds, 
@@ -461,7 +411,7 @@ def run_one_sample_inference(input_npz_file: Path,
             visual_folder.mkdir(parents = True, exist_ok = True) 
         
         # Save a visualization of the middle slice of the ground truth segmentation and the predicted segmentation at that slice
-        mid_slice = locate_centre_slice(gt_masks) #FUTURE NOTE: If we decide to do multiple segmentations in one array, this will need to change
+        mid_slice = find_centre_slice(gt_masks) #FUTURE NOTE: If we decide to do multiple segmentations in one array, this will need to change
 
         midview_folder = visual_folder / 'mid_seg_slice_view'
 

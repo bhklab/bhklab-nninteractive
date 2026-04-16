@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import SimpleITK as sitk
 
+from skimage.measure import regionprops, label
+
+
 def list_nonzero_seg_slices(seg: np.ndarray) -> list: 
     '''  
     From a given 3D segmentation array, list the slices that have nonzero values (mask) in them.
@@ -72,6 +75,58 @@ def get_hist_data_df(seg: np.ndarray) -> pd.DataFrame:
     pix_slice_df = pd.DataFrame(pix_slice_dict)
 
     return pix_slice_df
+
+
+def find_first_last_slice(mask: np.ndarray) -> tuple[int, int]: 
+    '''
+    Based on a 3D mask array, get the first and last slice within the array that has masked values. 
+
+    Parameters
+    ----------
+    mask: 
+        3D mask array 
+    
+    Returns 
+    ----------
+    first_slice: int 
+        The index where the first slice of the mask is 
+    last_slice: int 
+        The index where the last slice of the mask is 
+    '''
+    axes = tuple([i for i in range(mask.ndim) if i != 0])
+
+    slices = mask.any(axis = axes) 
+
+    nonzero_indices = np.where(slices)[0]
+
+    first_slice = np.amin(nonzero_indices)
+    last_slice = np.amax(nonzero_indices)
+
+    return first_slice, last_slice
+
+
+def find_centre_slice(mask_3d: np.ndarray) -> int:
+    """
+    Locates the center slice of a 3D mask.
+
+    Args:
+    - mask_3d (ndarray): A 3D binary mask.
+
+    Returns:
+    - (int): The index of the center slice.
+    """
+    
+    # find the slice in the center
+    lesion_labels = label(mask_3d)
+    centre_slc = regionprops(lesion_labels)[0].centroid[0]
+
+    # number of voxels per slice
+    vox_per_slc = np.array([np.sum(mask_3d[slc,:,:]) for slc in range(mask_3d.shape[0])])
+    max_vox_slc = np.where(vox_per_slc==np.max(vox_per_slc))[0]
+    if len(max_vox_slc) > 1: 
+        max_vox_slc = max_vox_slc[int(np.floor(len(max_vox_slc)/2))]
+
+    return int(np.floor((centre_slc+max_vox_slc)/2))
 
 
 def find_max_area_slice(gts_array: np.ndarray) -> int: 
