@@ -8,12 +8,13 @@ import numpy as np
 
 from .masks import find_first_last_slice, array_to_coords
 
-def pos_neg_true_visual(image, 
-                        mask_preds, 
-                        gt_masks, 
+def pos_neg_true_visual(image: np.ndarray, 
+                        mask_preds: np.ndarray, 
+                        gt_masks: np.ndarray, 
                         full_savepath: Path, 
                         window_level: int = 40, 
-                        window_width: int = 400): 
+                        window_width: int = 400
+                        ) -> plt.Figure: 
     '''
     Visualization of the selected slices based on the ground truth, showing the true positive, false positive, and false
     negative areas within these slices. 
@@ -86,13 +87,16 @@ def pos_neg_true_visual(image,
 
     plt.close()
 
+    return fig
 
-def slice_visual(image, 
-                mask_preds, 
-                gt_masks, 
+
+def slice_visual(image: np.ndarray, 
+                mask_preds: np.ndarray, 
+                gt_masks: np.ndarray, 
                 slice_idx: int, 
                 full_savepath: Path, 
-                text_prompts: dict = None): 
+                text_prompts: dict = None
+                ) -> plt.Figure: 
     '''
     Adjusted visualization from the inference_example_3D.ipynb example notebook that is in the BiomedParse repo. Saves a figure 
     showing the middle slice of the original image, the ground truth mask overlayed, and the predicted mask overlayed along 
@@ -175,14 +179,17 @@ def slice_visual(image,
 
     plt.close()
 
+    return fig
 
-def slice_visual_nnint(image, 
-                        mask_preds, 
-                        gt_masks, 
+
+def slice_visual_nnint(image: np.ndarray, 
+                        mask_preds: np.ndarray, 
+                        gt_masks: np.ndarray, 
                         slice_idx: int, 
                         full_savepath: Path, 
                         prompts: list, 
-                        prompt_list: list):
+                        prompt_list: list
+                        ) -> plt.Figure:
     '''
     Adjusted visualization from the inference_example_3D.ipynb example notebook that is in the BiomedParse repo. Saves a figure 
     showing the specified slice of the original image, the ground truth mask overlayed, and the predicted mask overlayed with the 
@@ -282,3 +289,5 @@ def slice_visual_nnint(image,
     fig.savefig(full_savepath, bbox_inches = 'tight')
 
     plt.close()
+
+    return fig
