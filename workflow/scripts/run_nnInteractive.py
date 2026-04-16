@@ -14,7 +14,7 @@ from pathlib import Path
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
-from utils.masks import find_centre_slice, find_first_last_slice
+from utils.masks import find_centre_slice, find_first_last_slice, list_nonzero_seg_slices
 from utils.visualization import mid_slice_visual, pos_neg_true_visual
 
 from nnInteractive.nnInteractive.inference.inference_session import nnInteractiveInferenceSession
@@ -91,26 +91,6 @@ def run_recist_infer(image,
 
     return results
 
-
-def list_nonzero_seg_slices(seg: np.ndarray): 
-    '''  
-    From a given 3D segmentation array, list the slices that have nonzero values (mask) in them.
-
-    Parameters
-    ----------
-    seg: np.ndarray
-        A 3D array containing a mask (ground truth, predicted, etc.)
-    
-    Returns
-    ----------
-    nonzero_slices: list 
-        Contains all of the slice numbers where there are nonzero values
-    '''
-    nonzero_slices = []
-    for slice_idx in range(seg.shape[0]): 
-        if np.count_nonzero(seg[slice_idx]) > 0: 
-            nonzero_slices.append(slice_idx)
-    return nonzero_slices
 
 def calc_metrics(pred_mask: np.ndarray, 
                  gt_mask: np.ndarray, 
