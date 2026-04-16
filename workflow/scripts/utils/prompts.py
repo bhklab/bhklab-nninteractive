@@ -4,7 +4,7 @@ from skimage.measure import regionprops
 
 from .annotations import get_line_from_recist, get_center_pt, get_recist_pts, get_negative_pts, get_recist_25_75_pts
 
-def get_prompt_points(gt2D: np.array, 
+def get_prompt_points(gt2D: np.ndarray, 
                       spacing):
     '''  
     From the ground truth segmentation with the largest pixel area, generate the four 
@@ -13,7 +13,7 @@ def get_prompt_points(gt2D: np.array,
 
     Parameters
     ----------
-    gt2D: np.array
+    gt2D: np.ndarray
         The ground truth segmentation at the largest area slice. Expects (z, x, y) format.
     spacing: 
         The spacing of the imaging used to create the ground truth segmentation. 
@@ -22,18 +22,18 @@ def get_prompt_points(gt2D: np.array,
 
     Returns
     ----------
-    negative_pts: np.array
+    negative_pts: np.ndarray
         Holds the coordinate information for the four corners of the bounding box 
         and two points sampled along the minor axis with the length of a buffered
         semi major axis. In [x1, y1, x2, y2, x3, y3, x4, y4, x_min1, y_min1, x_min2, y_min2] 
         form. 
-    center_pt: np.array
+    center_pt: np.ndarray
         Holds the coordinate information for the midpoint of the RECIST line in 
         [x_cent, y_cent] form.
-    recist_pts: np.array
+    recist_pts: np.ndarray
         Holds the information for the found RERECIST line in the form 
         [x_r1, y_r1, x_r2, y_r2]
-    pts_25_75: np.array
+    pts_25_75: np.ndarray
         Holds the information for two points sampled along 25% and 75% of the length
         of the RECIST line
     major_axis_length: float 
@@ -55,9 +55,9 @@ def get_prompt_points(gt2D: np.array,
 
 
 
-def transform_prompt_points(negative_pts: np.array,
-                            recist_pts: np.array, 
-                            pts_25_75: np.array, 
+def transform_prompt_points(negative_pts: np.ndarray,
+                            recist_pts: np.ndarray, 
+                            pts_25_75: np.ndarray, 
                             max_area_slice: int, 
                             img_shape: list):
     '''   
@@ -65,18 +65,18 @@ def transform_prompt_points(negative_pts: np.array,
 
     Parameters
     ----------
-    negative_pts: np.array
+    negative_pts: np.ndarray
         Holds the coordinate information for the four corners of the bounding box 
         and two points sampled along the minor axis with the length of a buffered
         semi major axis. In [x1, y1, x2, y2, x3, y3, x4, y4, x_min1, y_min1, x_min2, y_min2] 
         form. 
-    center_pt: np.array
+    center_pt: np.ndarray
         Holds the coordinate information for the midpoint of the RECIST line in 
         [x_cent, y_cent] form.
-    recist_pts: np.array
+    recist_pts: np.ndarray
         Holds the information for the found RERECIST line in the form 
         [x_r1, y_r1, x_r2, y_r2]
-    pts_25_75: np.array
+    pts_25_75: np.ndarray
         Holds the information for two points sampled along 25% and 75% of the length
         of the RECIST line 
     max_area_slice: int
