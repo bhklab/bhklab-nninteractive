@@ -1,5 +1,20 @@
 # Developer Notes
 
+## AI for Oncology work - Katy
+#### 2026-04-16  
+- Updated pyproject.toml to put the jupyter notebook dependencies in the dev environment/feature
+- Loading in the LesionLocator images with SimpleITK, they end up upside down in the axial slice (front of body facing bottom of slice)  
+    - interesting because nii.vue automatically fixes this when displaying
+- Restructured the code from nifti_nnInteractive and nnInt_prompt_testing into organized utils scripts for:  
+    - _annotations_: Anything related to generating lines, bounding boxes, points etc.
+    - _loaders_: Handling loading of anything 
+    - _masks_: Anything related to processing of the segmentation mask
+    - _plots_: Any plotting functions that make graphs of some kind
+    - _prompts_: Functions for prompt generation and transformation. Will be connected to annotations a lot.
+    - _scans_: Anything related to processing of the scan (CT, MR, etc.)
+    - _visualization_: Any functions to visualize the scans, masks, annotations, or prompts.
+- For the get_negative_points function, there is an input variable called `spacing`, but when called in `run_one_patient` in nnInt_prompt_testing, the shape of the 3D array is used. This is misleading, that variable name should be changed.
+
 ## Purpose of This Section
 
 This section is for documenting technical decisions, challenges, and solutions encountered during your project. These notes are valuable for:
