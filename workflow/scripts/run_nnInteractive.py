@@ -15,7 +15,7 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from utils.masks import find_centre_slice, find_first_last_slice
-from utils.visualization import mid_slice_visual
+from utils.visualization import mid_slice_visual, pos_neg_true_visual
 
 from nnInteractive.nnInteractive.inference.inference_session import nnInteractiveInferenceSession
 
@@ -91,82 +91,6 @@ def run_recist_infer(image,
 
     return results
 
-
-def pos_neg_true_visual(image, 
-                        mask_preds, 
-                        gt_masks, 
-                        full_savepath: Path, 
-                        window_level: int = 40, 
-                        window_width: int = 400): 
-    '''
-    Visualization of the selected slices based on the ground truth, showing the true positive, false positive, and false
-    negative areas within these slices. 
-
-    Parameters
-    ----------
-    image: 
-        The 4D array containing the original image data (assumes (1, x, y, z) order)
-    mask_preds: 
-        The array containing the predicted mask values (same shape as gt_masks). Assumes (x, y, z) order.
-    gt_masks: 
-        The array containing the ground truth mask values (same shape as mask_preds). Assumes (z, x, y) order.
-    full_savepath: Path
-        Should contain where to save the path and what to call the file outputted
-    window_level: int 
-        Window level for image visualiation. Set to 40 default. Is the abdominal window when the width is also left as default.
-    window_width: int 
-        The width of the window for image visualization. Set to 400 default. Is the abdominal window when the level is also left as default.
-    '''
-    #Calculate min and max HU for windowing 
-    upper_val = window_level + window_width / 2 
-    lower_val = window_level - window_width / 2 
-
-    # Make the predicted mask a different number to represent a different colour 
-    mask_alt = mask_preds * 2 
-
-    # Add masks together so that false negative is 1, false positive is 2, and true positive is 3 
-    comb_masks = mask_alt + gt_masks.transpose(1, 2, 0)
-    comb_masks = np.ma.masked_where(comb_masks == 0, comb_masks)
-
-    # Find the first and last slices that have mask in them 
-    gt_min, gt_max = find_first_last_slice(gt_masks)
-
-    num_nonzero_slices = gt_max - gt_min + 1 # need to add one to get true number. e.g. slices 0 - 5 have non zero (inclusive), true answer is 6 slices, but subtraction only will yield 5
-    # Check to see if there are more than 5 slices within the ground truth mask and adjust the subplot information accordingly 
-    if num_nonzero_slices < 5: 
-        if num_nonzero_slices == 1: 
-            return 0 #If there was only one slice in the segmentation, this is redundant with the mid slice view plot.
-        subplot_slices = num_nonzero_slices
-        slices_to_plot = range(gt_min, gt_max + 1)
-    else: 
-        subplot_slices = 5
-        slices_to_plot = [gt_min, gt_min + math.floor(num_nonzero_slices/4), gt_min + math.floor(num_nonzero_slices/2), gt_min + math.floor(num_nonzero_slices * 3 / 4), gt_max]
-    
-    print(slices_to_plot)
-    fig, axes = plt.subplots(1, subplot_slices, figsize = (15, 3)) 
-
-    # Create colour map for mask 
-    colours = ['red', 'green', 'blue']
-    boundaries = [1, 2, 3, 4]
-    cmap = mcolors.ListedColormap(colours)
-    norm = mcolors.BoundaryNorm(boundaries, cmap.N)
-
-    # Make legend info 
-    legend_elem = [mpatches.Patch(color = 'red', label = 'False Negative'), 
-                mpatches.Patch(color = 'green', label = 'False Positive'), 
-                mpatches.Patch(color = 'blue', label = 'True Positive')]
-    counter = 0
-    for i in slices_to_plot: 
-        axes[counter].imshow(np.clip(image[0,:,:,i], lower_val, upper_val), cmap = 'gray') 
-        axes[counter].imshow(comb_masks[:,:,i], cmap = cmap, norm = norm, interpolation = 'nearest', alpha = 0.6)
-        axes[counter].axis("off")
-        axes[counter].text(0.5, -0.1, f"Slice {i}", size = 11, ha ="center", transform = axes[counter].transAxes)
-        counter += 1
-
-        plt.tight_layout()
-
-    fig.legend(handles = legend_elem, loc = 'lower right', bbox_to_anchor=(0.67, -0.15), ncol=3, frameon=False, fontsize=11)
-    fig.savefig(full_savepath, bbox_inches = 'tight')
 
 def list_nonzero_seg_slices(seg: np.ndarray): 
     '''  
