@@ -68,7 +68,7 @@ platforms = ["linux-64"]
 [tool.pixi.pypi-dependencies]
 torch = { version = ">=2.6,<2.9.0", index = "https://download.pytorch.org/whl/cu126"}
 torchvision = { version = "*", index = "https://download.pytorch.org/whl/cu126"}
-nnInteractive = { path = ".", editable = true }
+nnInteractive = { path = "./nnInteractive", editable = true }
 
 [tool.pixi.environments]
 default = { solve-group = "default" }
@@ -83,3 +83,13 @@ pip = ">=26.0.1,<27"
 
 [dependency-groups]
 dev = ["readii>=1.38.0,<2", "opencv-python>=4.13.0.92,<5"]
+
+[tool.pixi.feature.dev.activation]
+# convenient variables which can be used in scripts
+env.CONFIG = "${PIXI_PROJECT_ROOT}/config"
+env.METADATA = "${PIXI_PROJECT_ROOT}/metadata"
+env.LOGS = "${PIXI_PROJECT_ROOT}/logs"
+env.RAWDATA = "${PIXI_PROJECT_ROOT}/data/rawdata"
+env.PROCDATA = "${PIXI_PROJECT_ROOT}/data/procdata"
+env.RESULTS = "${PIXI_PROJECT_ROOT}/data/results"
+env.SCRIPTS = "${PIXI_PROJECT_ROOT}/workflow/scripts"

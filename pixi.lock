@@ -152,7 +152,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/4a/91/48db081e7a63bb37284f9fbcefda7c44c277b18b0e13fbc36ea2335b71e6/typer-0.24.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/72/20/7f0f433060a962200b7272b8c12ba90ef5b903e218174301d0abfd523813/unittest2-1.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/4f/fe9a4d472aa867878ce3bb7efb16654c5d63672b86dc0e6e953a67018433/yacs-0.1.8-py3-none-any.whl
-      - pypi: ./
+      - pypi: ./nnInteractive
   dev:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -425,7 +425,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/72/20/7f0f433060a962200b7272b8c12ba90ef5b903e218174301d0abfd523813/unittest2-1.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/38/4f/fe9a4d472aa867878ce3bb7efb16654c5d63672b86dc0e6e953a67018433/yacs-0.1.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/3e/868e5c3364b6cee19ff3e1a122194fa4ce51def02c61023970442162859e/yarl-1.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: ./
+      - pypi: ./nnInteractive
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   build_number: 20
@@ -609,7 +609,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/attrs?source=hash-mapping
+  - pkg:pypi/attrs?source=compressed-mapping
   size: 64927
   timestamp: 1773935801332
 - conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.18.0-pyhcf101f3_1.conda
@@ -1736,7 +1736,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/jupyter-lsp?source=compressed-mapping
+  - pkg:pypi/jupyter-lsp?source=hash-mapping
   size: 61633
   timestamp: 1775136333147
 - conda: https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.8.0-pyhcf101f3_0.conda
@@ -2604,20 +2604,19 @@ packages:
   - matplotlib>=3.7 ; extra == 'viewers'
   - backports-zstd>=1.1 ; python_full_version < '3.14' and extra == 'zstd'
   requires_python: '>=3.10'
-- pypi: ./
+- pypi: ./nnInteractive
   name: nninteractive
-  version: 1.1.2
-  sha256: 3ae12df7a3d16386db1c1e0f63d4fd34df8bc958c80c637b536e7345c5f8066e
+  version: 1.1.5
+  sha256: 695bfd9c06df7ab708cfe7b8347685ed6345daa6b8c2e9b19806a9edebbb07f5
   requires_dist:
-  - monai>=1.5.1,<2
-  - nnunetv2>=2.6
+  - nnunetv2>=2.7.0
+  - torch>=2.1.2,!=2.9.*
   - acvl-utils>=0.2.3,<0.3
   - batchgenerators>=0.25.1
-  - damply>=0.26.0,<0.27
   - black ; extra == 'dev'
   - ruff ; extra == 'dev'
   - pre-commit ; extra == 'dev'
-  requires_python: '>=3.10,<3.13'
+  requires_python: '>=3.10'
   editable: true
 - pypi: https://files.pythonhosted.org/packages/3c/89/f9faa8bb35ba43b4d84017e52bc0099ac7a0d2c3c3ef168e2c46faebd1a1/nnunetv2-2.7.0.tar.gz
   name: nnunetv2
