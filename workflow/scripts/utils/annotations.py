@@ -1,8 +1,9 @@
 import numpy as np
+from pathlib import Path
 from skimage.draw import line
 from skimage.measure import regionprops
 
-from masks import find_first_last_slice
+from .masks import find_first_last_slice
 
 def get_line_from_recist(recist_coords: np.ndarray, 
                          slice_number: int, 
@@ -107,6 +108,92 @@ def get_bbox_from_line(recist_arr):
     bbox = [[min(512, int(y_tl)), min(512, int(y_br))], [min(512, int(x_tl)), min(512, int(x_br))], [first, first + 1]]
 
     return bbox
+
+
+def pad_bbox(box:np.array,
+             mask:np.array, 
+             padding:int,
+             spacing:np.array = None
+             ) -> np.array:
+    # Get full image dimensions to keep padding within image size
+    # D, H, W (z, y, x)
+    mask_shape = mask.shape
+
+    if spacing is not None: # Use the actual image spacing to calculate the padding
+        # Check that spacing can be applied to this mask's bounding box dimensions
+        if len(spacing) < len(mask_shape):
+            spacing = spacing[0, len(mask_shape)]
+        elif len(spacing) > len(mask_shape):
+            message = "Spacing for padding has more dimensions than the mask image."
+            raise ValueError(message)
+
+        # calculate the number of voxels to pad based on the actual image spacing
+        padding = np.round(padding / spacing)
+    else:
+        # Convert padding into an array with the same length as image dimensions
+        # This matches the behaviour of the spacing option
+        padding = padding * np.ones(len(mask_shape))
+    
+    pad_x_min = max(0, box[0] - padding[0])
+    pad_y_min = max(0, box[1] - padding[1])
+    # Handling 2D bounding box
+    if len(box) == 4:
+        mask_H, mask_W = mask_shape[0], mask_shape[1]
+        pad_x_max = min(mask_W, box[2] + padding[0])
+        pad_y_max = min(mask_H, box[3] + padding[1])
+
+        padded_box = np.array([pad_x_min, pad_y_min,
+                               pad_x_max, pad_y_max])
+
+    # Handling 3D bounding box
+    if len(box) == 6:
+        mask_D, mask_H, mask_W = mask_shape[0], mask_shape[1], mask_shape[2]
+        pad_z_min = max(0, box[2] - padding[2])
+        pad_x_max = min(mask_W, box[3] + padding[0])
+        pad_y_max = min(mask_H, box[4] + padding[1]) 
+        pad_z_max = min(mask_D, box[5] + padding[2])
+        
+        padded_box = np.array([pad_x_min, pad_y_min, pad_z_min,
+                               pad_x_max, pad_y_max, pad_z_max])
+
+    return padded_box.astype(int)
+
+
+def mask2D_to_bbox(gt2D:np.array, 
+                   mask_path:Path, 
+                   padding:int | None = None,
+                   spacing:np.array = None
+                   ) -> np.array:
+    try:
+        ## Old code 
+        # y_indices, x_indices = np.where(gt2D > 0)
+        # x_min, x_max = np.min(x_indices), np.max(x_indices)
+        # y_min, y_max = np.min(y_indices), np.max(y_indices)
+        # boxes = np.array([x_min, y_min, x_max, y_max])
+
+        props = regionprops(gt2D)[0]
+        y_cent, x_cent = props.centroid
+        orientation = props.orientation
+        semi_maj_axis_len = props.major_axis_length / 2
+
+        x_start = x_cent - np.sin(orientation) * semi_maj_axis_len
+        y_start = y_cent - np.cos(orientation) * semi_maj_axis_len
+
+        x_end = x_cent + np.sin(orientation) * semi_maj_axis_len
+        y_end = y_cent + np.cos(orientation) * semi_maj_axis_len
+
+        boxes = np.array([x_start, y_start, x_end, y_end])
+
+        if padding:
+            boxes = pad_bbox(box = boxes,
+                             mask = gt2D,
+                             padding = padding,
+                             spacing = spacing)
+        
+        return boxes.astype(int)
+    
+    except Exception as e:
+        raise Exception(f'error {e} with file {mask_path} and sum of gts is {gt2D.sum()}')
 
 
 def get_slice_properties(mask_slice: np.ndarray) -> tuple[float, float, float, float, float]:
