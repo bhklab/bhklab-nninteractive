@@ -2,6 +2,8 @@ import numpy as np
 from skimage.draw import line
 from skimage.measure import regionprops
 
+from masks import find_first_last_slice
+
 def get_line_from_recist(recist_coords: np.ndarray, 
                          slice_number: int, 
                          img_size: np.ndarray):
@@ -79,6 +81,32 @@ def get_centered_bbox(center_pt: np.ndarray,
     bbox_2d = [[min(512, int(y_tl)), min(512, int(y_br))], [min(512, int(x_tl)), min(512, int(x_br))], [max_area_slice, max_area_slice + 1]]
 
     return bbox_2d
+
+
+def get_bbox_from_line(recist_arr): 
+    '''ASSUMES IT'S IN Z, X, Y FORM'''
+    # Find slice with the line in it 
+    first, _ = find_first_last_slice(recist_arr)
+    first = int(first)
+    recist_slice = recist_arr[first]
+    
+    #Get properties of recist line 
+    line_props = regionprops(recist_slice)[0]
+    y_cent, x_cent = line_props.centroid
+    maj_ax_len = line_props.axis_major_length
+
+    #Get top left and bottom right corners of the bounding box 
+    x_tl = x_cent - maj_ax_len / 2 
+    y_tl = y_cent - maj_ax_len / 2 
+
+    x_br = x_cent + maj_ax_len / 2 
+    y_br = y_cent + maj_ax_len / 2
+
+    # Note that the nnInteractive examples say the bounding box is in (x, y, z) order, but
+    # in my experience, it actually expects (y, x, z) order 
+    bbox = [[min(512, int(y_tl)), min(512, int(y_br))], [min(512, int(x_tl)), min(512, int(x_br))], [first, first + 1]]
+
+    return bbox
 
 
 def get_slice_properties(mask_slice: np.ndarray) -> tuple[float, float, float, float, float]:
